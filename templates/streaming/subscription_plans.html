@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}پلن‌های اشتراک{% endblock %}
+{% block content %}
+  <section class="hero" style="padding: 3rem 0 2rem">
+    <h1>پلن مناسب خود را انتخاب کنید</h1>
+    <p>بسته‌های متنوع اشتراک با دسترسی‌های متفاوت برای تجربه‌ای منعطف و مقرون‌به‌صرفه.</p>
+  </section>
+
+  {% if plans %}
+    <div class="grid grid-3">
+      {% for plan in plans %}
+        <div class="card" id="plan-{{ plan.slug }}" style="display: flex; flex-direction: column; gap: 0.6rem">
+          <span class="badge">سطح {{ plan.level }}</span>
+          <h3 style="margin: 0">{{ plan.name }}</h3>
+          <p style="color: var(--text-muted); line-height: 1.8">{{ plan.description|default:"" }}</p>
+          <div style="display: flex; gap: 0.4rem; align-items: baseline">
+            <span style="font-size: 2rem; font-weight: 700">{{ plan.price }}</span>
+            <span style="color: var(--text-muted)">{{ plan.currency }}</span>
+          </div>
+          <span style="color: var(--text-muted); font-size: 0.9rem">مدت اعتبار {{ plan.duration_days }} روز</span>
+          <a class="btn btn-primary" href="{% url 'dashboard' %}">شروع اشتراک</a>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">فعلاً پلنی برای نمایش وجود ندارد.</div>
+  {% endif %}
+{% endblock %}

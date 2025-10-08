@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ video.title }} | پلتفرم اشتراک ویدیو{% endblock %}
+{% block content %}
+  <article class="card" style="margin-top: 2rem; padding: 2rem">
+    <header style="display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); align-items: center">
+      <div class="video-thumb" style="border-radius: 20px">
+        {% if video.thumbnail_url %}
+          <img src="{{ video.thumbnail_url }}" alt="{{ video.title }}" />
+        {% else %}
+          <img src="https://dummyimage.com/640x360/1f2937/ffffff.png&text={{ video.title|urlencode }}" alt="{{ video.title }}" />
+        {% endif %}
+        {% if video.is_premium %}
+          <span class="badge">ویژه</span>
+        {% endif %}
+      </div>
+      <div style="display: grid; gap: 0.8rem">
+        <h1 style="margin: 0">{{ video.title }}</h1>
+        {% if video.category %}
+          <span class="badge">دسته: {{ video.category.name }}</span>
+        {% endif %}
+        <p style="color: var(--text-muted); line-height: 1.9">{{ video.description|linebreaksbr }}</p>
+        <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; color: var(--text-muted)">
+          <span>میانگین امتیاز: {{ average_rating|floatformat:1 }}/5</span>
+          <span>مدت زمان: {{ video.duration_seconds }} ثانیه</span>
+          {% if video.published_at %}
+            <span>انتشار: {{ video.published_at|date:"Y/m/d" }}</span>
+          {% endif %}
+        </div>
+        {% if can_watch %}
+          <div style="display: flex; gap: 1rem">
+            <a class="btn btn-primary" href="{{ video.stream_url }}" target="_blank" rel="noopener">مشاهده ویدیو</a>
+            {% if video.trailer_url %}
+              <a class="btn btn-outline" href="{{ video.trailer_url }}" target="_blank" rel="noopener">مشاهده تریلر</a>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="card" style="background: rgba(249,115,22,0.08); color: var(--accent)">
+            برای مشاهده کامل این ویدیو لازم است وارد شوید و اشتراک متناسب فعال کنید.
+          </div>
+        {% endif %}
+      </div>
+    </header>
+  </article>
+
+  <section style="margin-top: 2rem">
+    <div class="section-heading">
+      <h2>ویدیوهای مرتبط</h2>
+    </div>
+    {% if related_videos %}
+      <div class="grid grid-4">
+        {% for related in related_videos %}
+          <article class="card video-card">
+            <a href="{% url 'video_detail' slug=related.slug %}">
+              <div class="video-thumb">
+                {% if related.thumbnail_url %}
+                  <img src="{{ related.thumbnail_url }}" alt="{{ related.title }}" />
+                {% else %}
+                  <img src="https://dummyimage.com/640x360/1f2937/ffffff.png&text={{ related.title|urlencode }}" alt="{{ related.title }}" />
+                {% endif %}
+              </div>
+            </a>
+            <a href="{% url 'video_detail' slug=related.slug %}"><strong>{{ related.title }}</strong></a>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">ویدیوی مرتبطی وجود ندارد.</div>
+    {% endif %}
+  </section>
+
+  <section style="margin-top: 2rem">
+    <div class="section-heading">
+      <h2>آخرین نظرات</h2>
+    </div>
+    {% if recent_comments %}
+      <div class="grid" style="gap: 1rem">
+        {% for comment in recent_comments %}
+          <div class="card" style="display: grid; gap: 0.6rem">
+            <div style="display: flex; gap: 0.6rem; align-items: center">
+              <span class="badge">{{ comment.user.get_full_name|default:comment.user.username }}</span>
+              <span style="color: var(--text-muted); font-size: 0.85rem">{{ comment.created_at|date:"Y/m/d H:i" }}</span>
+              {% if comment.is_spoiler %}
+                <span class="badge" style="background: rgba(220,38,38,0.18); color: #fca5a5">اسپویل</span>
+              {% endif %}
+            </div>
+            <p style="margin: 0; color: var(--text-muted); line-height: 1.8">{{ comment.comment }}</p>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">نظری برای این ویدیو ثبت نشده است.</div>
+    {% endif %}
+  </section>
+{% endblock %}
