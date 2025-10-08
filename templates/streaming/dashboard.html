@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}داشبورد کاربری{% endblock %}
+{% block content %}
+  <section class="hero" style="padding: 2.5rem 0 1.5rem">
+    <h1>سلام {{ request.user.get_full_name|default:request.user.username }} 👋</h1>
+    <p>در اینجا می‌توانید وضعیت اشتراک، ویدیوهای تماشا شده اخیر و بوکمارک‌های خود را مدیریت کنید.</p>
+  </section>
+
+  <section class="grid grid-3">
+    <div class="card" style="grid-column: span 2">
+      <h2 style="margin-top: 0">وضعیت اشتراک</h2>
+      {% if active_subscription %}
+        <p style="color: var(--text-muted)">
+          پلن {{ active_subscription.plan.name }} تا تاریخ {{ active_subscription.end_date|date:"Y/m/d" }} فعال است.
+        </p>
+        <p style="color: var(--text-muted)">تعداد تمدیدها: {{ active_subscription.renewal_count }}</p>
+        <div style="display: flex; gap: 1rem; margin-top: 1rem">
+          <a class="btn btn-primary" href="{% url 'subscription_plans' %}">ارتقای پلن</a>
+          <a class="btn btn-outline" href="{% url 'streaming:subscription-list' %}">مشاهده سوابق اشتراک</a>
+        </div>
+      {% else %}
+        <p class="empty-state" style="padding: 0">اشتراک فعالی ندارید. از پلن‌های پیشنهادی استفاده کنید.</p>
+        <a class="btn btn-primary" href="{% url 'subscription_plans' %}">خرید اشتراک</a>
+      {% endif %}
+    </div>
+    <div class="card">
+      <h2 style="margin-top: 0">پیشنهاد امروز</h2>
+      {% if recommended_videos %}
+        {% for suggestion in recommended_videos|slice:":1" %}
+          <a href="{% url 'video_detail' slug=suggestion.slug %}" style="display: grid; gap: 0.6rem">
+            <div class="video-thumb">
+              {% if suggestion.display_thumbnail %}
+                <img src="{{ suggestion.display_thumbnail }}" alt="{{ suggestion.title }}" />
+              {% else %}
+                <img src="https://dummyimage.com/640x360/1f2937/ffffff.png&text={{ suggestion.title|urlencode }}" alt="{{ suggestion.title }}" />
+              {% endif %}
+            </div>
+            <strong>{{ suggestion.title }}</strong>
+            <span style="color: var(--text-muted)">مدت زمان {{ suggestion.duration_seconds }} ثانیه</span>
+          </a>
+        {% endfor %}
+      {% else %}
+        <p class="empty-state" style="padding: 0">به زودی پیشنهادهای جدیدی اضافه می‌شود.</p>
+      {% endif %}
+    </div>
+  </section>
+
+  <section style="margin-top: 2rem">
+    <div class="section-heading">
+      <h2>تاریخچه تماشا</h2>
+      <a class="btn btn-outline" href="{% url 'history_page' %}">نمایش همه</a>
+    </div>
+    {% if recent_history %}
+      <div class="grid">
+        {% for item in recent_history %}
+          <div class="card" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem">
+            <div>
+              <a href="{% url 'video_detail' slug=item.video.slug %}"><strong>{{ item.video.title }}</strong></a>
+              <p style="color: var(--text-muted); margin: 0.4rem 0 0">تماشا در {{ item.watched_at|date:"Y/m/d H:i" }}</p>
+            </div>
+            <span class="badge">پیشرفت {{ item.progress }} ثانیه</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">هنوز ویدیویی تماشا نکرده‌اید.</div>
+    {% endif %}
+  </section>
+
+  <section style="margin-top: 2rem">
+    <div class="section-heading">
+      <h2>بوکمارک‌ها</h2>
+      <a class="btn btn-outline" href="{% url 'bookmark_page' %}">مدیریت بوکمارک‌ها</a>
+    </div>
+    {% if bookmarks %}
+      <div class="grid grid-4">
+        {% for bookmark in bookmarks %}
+          <article class="card video-card">
+            <a href="{% url 'video_detail' slug=bookmark.video.slug %}">
+              <div class="video-thumb">
+                {% if bookmark.video.display_thumbnail %}
+                  <img src="{{ bookmark.video.display_thumbnail }}" alt="{{ bookmark.video.title }}" />
+                {% else %}
+                  <img src="https://dummyimage.com/640x360/1f2937/ffffff.png&text={{ bookmark.video.title|urlencode }}" alt="{{ bookmark.video.title }}" />
+                {% endif %}
+              </div>
+            </a>
+            <a href="{% url 'video_detail' slug=bookmark.video.slug %}"><strong>{{ bookmark.video.title }}</strong></a>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">بوکمارک فعالی ندارید.</div>
+    {% endif %}
+  </section>
+{% endblock %}

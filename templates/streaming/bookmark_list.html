@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}بوکمارک‌های من{% endblock %}
+{% block content %}
+  <section class="hero" style="padding: 2.5rem 0 1.5rem">
+    <h1>بوکمارک‌های ذخیره شده</h1>
+    <p>همه ویدیوهایی که برای تماشا در آینده نگه داشته‌اید در اینجا نمایش داده می‌شوند.</p>
+  </section>
+
+  {% if bookmarks %}
+    <div class="grid grid-4">
+      {% for bookmark in bookmarks %}
+        <article class="card video-card">
+          <a href="{% url 'video_detail' slug=bookmark.video.slug %}">
+            <div class="video-thumb">
+              {% if bookmark.video.display_thumbnail %}
+                <img src="{{ bookmark.video.display_thumbnail }}" alt="{{ bookmark.video.title }}" />
+              {% else %}
+                <img src="https://dummyimage.com/640x360/1f2937/ffffff.png&text={{ bookmark.video.title|urlencode }}" alt="{{ bookmark.video.title }}" />
+              {% endif %}
+            </div>
+          </a>
+          <div style="display: grid; gap: 0.4rem">
+            <a href="{% url 'video_detail' slug=bookmark.video.slug %}"><strong>{{ bookmark.video.title }}</strong></a>
+            {% if bookmark.video.category %}
+              <span style="color: var(--text-muted); font-size: 0.9rem">{{ bookmark.video.category.name }}</span>
+            {% endif %}
+            <span style="color: var(--text-muted); font-size: 0.85rem">ذخیره شده در {{ bookmark.created_at|date:"Y/m/d H:i" }}</span>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+    {% if is_paginated %}
+      <div style="display: flex; justify-content: center; gap: 0.6rem; margin-top: 1.5rem">
+        {% if page_obj.has_previous %}
+          <a class="btn btn-outline" href="?page={{ page_obj.previous_page_number }}">قبلی</a>
+        {% endif %}
+        <span style="align-self: center; color: var(--text-muted)">صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+          <a class="btn btn-outline" href="?page={{ page_obj.next_page_number }}">بعدی</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="empty-state">بوکمارکی برای نمایش وجود ندارد.</div>
+  {% endif %}
+{% endblock %}
