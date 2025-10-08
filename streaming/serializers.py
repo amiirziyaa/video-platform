@@ -156,6 +156,8 @@ class VideoSerializer(serializers.ModelSerializer):
     category = VideoCategorySerializer(read_only=True)
     average_rating = serializers.FloatField(read_only=True)
     views_count = serializers.IntegerField(read_only=True)
+    playback_url = serializers.SerializerMethodField()
+    thumbnail_source = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Video
@@ -168,7 +170,9 @@ class VideoSerializer(serializers.ModelSerializer):
             "duration_seconds",
             "trailer_url",
             "stream_url",
+            "video_file",
             "thumbnail_url",
+            "thumbnail_image",
             "price",
             "min_subscription_level",
             "is_premium",
@@ -178,6 +182,8 @@ class VideoSerializer(serializers.ModelSerializer):
             "updated_at",
             "average_rating",
             "views_count",
+            "playback_url",
+            "thumbnail_source",
         ]
         read_only_fields = [
             "id",
@@ -187,7 +193,23 @@ class VideoSerializer(serializers.ModelSerializer):
             "updated_at",
             "average_rating",
             "views_count",
+            "playback_url",
+            "thumbnail_source",
         ]
+
+    def get_playback_url(self, obj: models.Video) -> str | None:
+        url = obj.playback_url
+        request = self.context.get("request") if hasattr(self, "context") else None
+        if url and request and url.startswith("/"):
+            return request.build_absolute_uri(url)
+        return url
+
+    def get_thumbnail_source(self, obj: models.Video) -> str | None:
+        url = obj.display_thumbnail
+        request = self.context.get("request") if hasattr(self, "context") else None
+        if url and request and url.startswith("/"):
+            return request.build_absolute_uri(url)
+        return url
 
 
 class VideoWriteSerializer(serializers.ModelSerializer):
@@ -200,12 +222,35 @@ class VideoWriteSerializer(serializers.ModelSerializer):
             "duration_seconds",
             "trailer_url",
             "stream_url",
+            "video_file",
             "thumbnail_url",
+            "thumbnail_image",
             "price",
             "min_subscription_level",
             "is_premium",
             "status",
         ]
+        extra_kwargs = {
+            "stream_url": {"required": False, "allow_blank": True},
+            "video_file": {"required": False, "allow_null": True},
+            "thumbnail_url": {"required": False, "allow_blank": True},
+            "thumbnail_image": {"required": False, "allow_null": True},
+        }
+
+    def validate(self, attrs):
+        stream_url = attrs.get("stream_url")
+        video_file = attrs.get("video_file")
+        instance = getattr(self, "instance", None)
+        existing_stream = getattr(instance, "stream_url", "") if instance else ""
+        existing_file = getattr(instance, "video_file", None) if instance else None
+        if not (stream_url or video_file or existing_stream or existing_file):
+            raise serializers.ValidationError(
+                "آپلود فایل ویدیو یا وارد کردن آدرس استریم الزامی است."
+            )
+        return super().validate(attrs)
+
+    def to_representation(self, instance):
+        return VideoSerializer(instance, context=self.context).data
 
 
 class WatchHistorySerializer(serializers.ModelSerializer):

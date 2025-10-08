@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}تاریخچه تماشا{% endblock %}
+{% block content %}
+  <section class="hero" style="padding: 2.5rem 0 1.5rem">
+    <h1>تاریخچه تماشای شما</h1>
+    <p>در این صفحه می‌توانید لیست کامل ویدیوهایی که دیده‌اید را به‌همراه میزان پیشرفت مشاهده کنید.</p>
+  </section>
+
+  {% if history %}
+    <div class="card" style="overflow-x: auto">
+      <table>
+        <thead>
+          <tr>
+            <th>ویدیو</th>
+            <th>تاریخ تماشا</th>
+            <th>پیشرفت</th>
+            <th>وضعیت</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in history %}
+            <tr>
+              <td>
+                <a href="{% url 'video_detail' slug=item.video.slug %}">{{ item.video.title }}</a>
+                {% if item.video.category %}
+                  <div style="color: var(--text-muted); font-size: 0.85rem">{{ item.video.category.name }}</div>
+                {% endif %}
+              </td>
+              <td>{{ item.watched_at|date:"Y/m/d H:i" }}</td>
+              <td>{{ item.progress }} ثانیه</td>
+              <td>
+                {% if item.completed %}
+                  <span class="badge" style="background: rgba(34,197,94,0.18); color: #bbf7d0">تکمیل شده</span>
+                {% else %}
+                  <span class="badge">در حال تماشا</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if is_paginated %}
+      <div style="display: flex; justify-content: center; gap: 0.6rem; margin-top: 1.5rem">
+        {% if page_obj.has_previous %}
+          <a class="btn btn-outline" href="?page={{ page_obj.previous_page_number }}">قبلی</a>
+        {% endif %}
+        <span style="align-self: center; color: var(--text-muted)">صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+          <a class="btn btn-outline" href="?page={{ page_obj.next_page_number }}">بعدی</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="empty-state">هنوز ویدیویی تماشا نکرده‌اید.</div>
+  {% endif %}
+{% endblock %}

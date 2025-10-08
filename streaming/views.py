@@ -3,10 +3,11 @@ from __future__ import annotations
 
 from typing import Any
 
+from django.contrib import messages
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import QuerySet
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views import generic
 from rest_framework import mixins, permissions, status, viewsets
@@ -107,6 +108,36 @@ class SubscriptionPlanListView(generic.ListView):
         return models.SubscriptionPlan.objects.filter(is_active=True).order_by("level")
 
 
+class SubscriptionCheckoutView(LoginRequiredMixin, generic.TemplateView):
+    """Checkout-like view to start a subscription for a plan."""
+
+    template_name = "streaming/subscription_checkout.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.plan = get_object_or_404(
+            models.SubscriptionPlan, slug=kwargs["slug"], is_active=True
+        )
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["plan"] = self.plan
+        context["active_subscription"] = self.request.user.active_subscription
+        return context
+
+    def post(self, request, *args, **kwargs):
+        service = services.SubscriptionService()
+        try:
+            subscription = service.start_subscription(request.user, self.plan)
+        except ValueError as exc:
+            messages.error(request, str(exc))
+            return self.get(request, *args, **kwargs)
+        messages.success(
+            request, f"اشتراک {subscription.plan.name} با موفقیت فعال یا تمدید شد."
+        )
+        return redirect("dashboard")
+
+
 class DashboardView(LoginRequiredMixin, generic.TemplateView):
     """Private dashboard summarising the user activity."""
 
@@ -129,6 +160,34 @@ class DashboardView(LoginRequiredMixin, generic.TemplateView):
             .order_by("-published_at")[:6]
         )
         return context
+
+
+class WatchHistoryListView(LoginRequiredMixin, generic.ListView):
+    """Full watch history for the authenticated user."""
+
+    template_name = "streaming/history_list.html"
+    context_object_name = "history"
+    paginate_by = 20
+
+    def get_queryset(self) -> QuerySet[models.WatchHistory]:
+        return (
+            self.request.user.watch_history.select_related("video", "video__category")
+            .order_by("-watched_at")
+        )
+
+
+class BookmarkListView(LoginRequiredMixin, generic.ListView):
+    """List of all bookmarks for the authenticated user."""
+
+    template_name = "streaming/bookmark_list.html"
+    context_object_name = "bookmarks"
+    paginate_by = 24
+
+    def get_queryset(self) -> QuerySet[models.VideoBookmark]:
+        return (
+            self.request.user.bookmarks.select_related("video", "video__category")
+            .order_by("-created_at")
+        )
 
 
 class RegisterView(generic.CreateView):

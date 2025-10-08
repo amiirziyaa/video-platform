@@ -25,8 +25,8 @@
           <article class="card video-card">
             <a href="{% url 'video_detail' slug=video.slug %}">
               <div class="video-thumb">
-                {% if video.thumbnail_url %}
-                  <img src="{{ video.thumbnail_url }}" alt="{{ video.title }}" />
+                {% if video.display_thumbnail %}
+                  <img src="{{ video.display_thumbnail }}" alt="{{ video.title }}" />
                 {% else %}
                   <img src="https://dummyimage.com/640x360/1f2937/fff.png&text={{ video.title|urlencode }}" alt="{{ video.title }}" />
                 {% endif %}
@@ -59,8 +59,8 @@
           <article class="card video-card">
             <a href="{% url 'video_detail' slug=video.slug %}">
               <div class="video-thumb">
-                {% if video.thumbnail_url %}
-                  <img src="{{ video.thumbnail_url }}" alt="{{ video.title }}" />
+                {% if video.display_thumbnail %}
+                  <img src="{{ video.display_thumbnail }}" alt="{{ video.title }}" />
                 {% else %}
                   <img src="https://dummyimage.com/640x360/1f2937/fff.png&text={{ video.title|urlencode }}" alt="{{ video.title }}" />
                 {% endif %}

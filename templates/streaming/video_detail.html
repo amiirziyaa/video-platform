@@ -4,8 +4,8 @@
   <article class="card" style="margin-top: 2rem; padding: 2rem">
     <header style="display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); align-items: center">
       <div class="video-thumb" style="border-radius: 20px">
-        {% if video.thumbnail_url %}
-          <img src="{{ video.thumbnail_url }}" alt="{{ video.title }}" />
+        {% if video.display_thumbnail %}
+          <img src="{{ video.display_thumbnail }}" alt="{{ video.title }}" />
         {% else %}
           <img src="https://dummyimage.com/640x360/1f2937/ffffff.png&text={{ video.title|urlencode }}" alt="{{ video.title }}" />
         {% endif %}
@@ -27,8 +27,22 @@
           {% endif %}
         </div>
         {% if can_watch %}
-          <div style="display: flex; gap: 1rem">
-            <a class="btn btn-primary" href="{{ video.stream_url }}" target="_blank" rel="noopener">مشاهده ویدیو</a>
+          <div style="display: grid; gap: 1rem">
+            {% if video.video_file %}
+              <video controls preload="metadata" style="width: 100%; border-radius: 16px; overflow: hidden; background: #000">
+                <source src="{{ video.video_file.url }}" />
+                مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند. می‌توانید فایل را <a href="{{ video.video_file.url }}">دانلود کنید</a>.
+              </video>
+              {% if video.stream_url %}
+                <a class="btn btn-outline" href="{{ video.stream_url }}" target="_blank" rel="noopener">پخش در پنجره جدید</a>
+              {% endif %}
+            {% elif video.playback_url %}
+              <a class="btn btn-primary" href="{{ video.playback_url }}" target="_blank" rel="noopener">مشاهده ویدیو</a>
+            {% else %}
+              <div class="card" style="background: rgba(59,130,246,0.18); color: #bfdbfe">
+                فایل ویدیویی برای این محتوا ثبت نشده است.
+              </div>
+            {% endif %}
             {% if video.trailer_url %}
               <a class="btn btn-outline" href="{{ video.trailer_url }}" target="_blank" rel="noopener">مشاهده تریلر</a>
             {% endif %}
@@ -52,8 +66,8 @@
           <article class="card video-card">
             <a href="{% url 'video_detail' slug=related.slug %}">
               <div class="video-thumb">
-                {% if related.thumbnail_url %}
-                  <img src="{{ related.thumbnail_url }}" alt="{{ related.title }}" />
+                {% if related.display_thumbnail %}
+                  <img src="{{ related.display_thumbnail }}" alt="{{ related.title }}" />
                 {% else %}
                   <img src="https://dummyimage.com/640x360/1f2937/ffffff.png&text={{ related.title|urlencode }}" alt="{{ related.title }}" />
                 {% endif %}

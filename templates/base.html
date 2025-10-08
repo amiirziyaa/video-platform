@@ -204,6 +204,38 @@
         color: var(--text-muted);
         padding: 3rem 0;
       }
+      .flash-container {
+        display: grid;
+        gap: 0.8rem;
+        margin: 1.5rem 0;
+      }
+      .alert {
+        padding: 1rem 1.4rem;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text-primary);
+      }
+      .alert-success {
+        background: rgba(34, 197, 94, 0.16);
+        border-color: rgba(34, 197, 94, 0.4);
+        color: #bbf7d0;
+      }
+      .alert-error {
+        background: rgba(239, 68, 68, 0.16);
+        border-color: rgba(248, 113, 113, 0.45);
+        color: #fecaca;
+      }
+      .alert-warning {
+        background: rgba(234, 179, 8, 0.18);
+        border-color: rgba(234, 179, 8, 0.4);
+        color: #fef08a;
+      }
+      .alert-info {
+        background: rgba(59, 130, 246, 0.16);
+        border-color: rgba(96, 165, 250, 0.4);
+        color: #bfdbfe;
+      }
       @media (max-width: 768px) {
         .toolbar {
           flex-direction: column;
@@ -249,6 +281,13 @@
       </div>
     </header>
     <main class="container">
+      {% if messages %}
+        <div class="flash-container">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
       {% block content %}{% endblock %}
     </main>
     <footer>

@@ -234,8 +234,10 @@ class Video(models.Model):
     category = models.ForeignKey(VideoCategory, on_delete=models.SET_NULL, null=True, related_name="videos")
     duration_seconds = models.PositiveIntegerField()
     trailer_url = models.URLField(blank=True)
-    stream_url = models.URLField()
+    stream_url = models.URLField(blank=True)
+    video_file = models.FileField(upload_to="videos/", blank=True, null=True)
     thumbnail_url = models.URLField(blank=True)
+    thumbnail_image = models.ImageField(upload_to="thumbnails/", blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     min_subscription_level = models.PositiveIntegerField(default=1)
     is_premium = models.BooleanField(default=True)
@@ -281,6 +283,29 @@ class Video(models.Model):
     @property
     def views_count(self) -> int:
         return self.watch_history.count()
+
+    @property
+    def playback_url(self) -> str | None:
+        """Return the preferred playback URL for embedding in templates."""
+
+        if self.video_file:
+            try:
+                return self.video_file.url
+            except ValueError:
+                # Storage backends may raise if the file is missing. Return None gracefully.
+                return None
+        return self.stream_url or None
+
+    @property
+    def display_thumbnail(self) -> str | None:
+        """Return the most appropriate thumbnail source."""
+
+        if self.thumbnail_image:
+            try:
+                return self.thumbnail_image.url
+            except ValueError:
+                return None
+        return self.thumbnail_url or None
 
 
 class WatchHistory(models.Model):

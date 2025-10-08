@@ -18,7 +18,7 @@
             <span style="color: var(--text-muted)">{{ plan.currency }}</span>
           </div>
           <span style="color: var(--text-muted); font-size: 0.9rem">مدت اعتبار {{ plan.duration_days }} روز</span>
-          <a class="btn btn-primary" href="{% url 'dashboard' %}">شروع اشتراک</a>
+          <a class="btn btn-primary" href="{% url 'subscription_checkout' slug=plan.slug %}">شروع اشتراک</a>
         </div>
       {% endfor %}
     </div>
