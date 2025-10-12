@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Video Subscription Platform{% endblock %}</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg-color: #111827;
+        --accent: #f97316;
+        --accent-muted: rgba(249, 115, 22, 0.12);
+        --surface: rgba(255, 255, 255, 0.05);
+        --text-primary: #f9fafb;
+        --text-muted: #9ca3af;
+        font-size: 16px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+        background: linear-gradient(160deg, #0f172a 0%, #111827 50%, #020617 100%);
+        color: var(--text-primary);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      header {
+        background: rgba(2, 6, 23, 0.85);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      .container {
+        width: min(1200px, 92vw);
+        margin: 0 auto;
+        padding: 0 0 2rem;
+        flex: 1;
+      }
+      .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 0;
+        gap: 1rem;
+      }
+      nav ul {
+        list-style: none;
+        display: flex;
+        gap: 1.5rem;
+        margin: 0;
+        padding: 0;
+        font-weight: 500;
+      }
+      .btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+        border-radius: 999px; padding: 0.55rem 1.4rem; font-weight: 600;
+        transition: transform 0.2s ease, box-shadow 0.3s ease;
+        cursor: pointer; border: none; font-size: 0.95rem;
+      }
+      .btn-primary { background: var(--accent); color: #0f172a; box-shadow: 0 10px 35px rgba(249, 115, 22, 0.35); }
+      .btn-outline { background: transparent; color: var(--text-primary); border: 1px solid rgba(249, 115, 22, 0.5); }
+      .btn:hover { transform: translateY(-2px); }
+      .card {
+        background: var(--surface); border-radius: 18px; padding: 1.5rem;
+        backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.04);
+      }
+      .grid { display: grid; gap: 1.2rem; }
+      .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+      .grid-3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+      .grid-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+      .badge {
+        display: inline-flex; align-items: center; gap: 0.3rem;
+        background: var(--accent-muted); color: var(--accent);
+        padding: 0.25rem 0.65rem; border-radius: 999px; font-size: 0.8rem;
+      }
+      footer { text-align: center; padding: 2rem 0 3rem; color: var(--text-muted); }
+      .flash-container { display: grid; gap: 0.8rem; margin: 1.5rem 0; }
+      .alert { padding: 1rem 1.4rem; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.08); }
+      .alert-success { background: rgba(34, 197, 94, 0.16); border-color: rgba(34, 197, 94, 0.4); color: #bbf7d0; }
+      .alert-error { background: rgba(239, 68, 68, 0.16); border-color: rgba(248, 113, 113, 0.45); color: #fecaca; }
+      .alert-info { background: rgba(59, 130, 246, 0.16); border-color: rgba(96, 165, 250, 0.4); color: #bfdbfe; }
+      
+      /* --- START OF MISSING/FIXED CSS --- */
+      .video-card {
+        padding: 1rem; /* Add some padding to video cards */
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+      }
+      .video-thumb {
+        position: relative;
+        aspect-ratio: 16 / 25;
+        border-radius: 12px; /* Slightly smaller radius */
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .video-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* This makes the image cover the area without stretching */
+      }
+      .video-thumb .badge {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+      }
+      /* --- END OF MISSING/FIXED CSS --- */
+    </style>
+    {% block extra_head %}
+    <style>
+      .user-dropdown { position: relative; }
+      .user-dropdown-trigger {
+        background: var(--surface); border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 999px; padding: 0.4rem 0.6rem 0.4rem 1rem;
+        display: flex; align-items: center; gap: 0.5rem;
+        cursor: pointer; font-weight: 600;
+      }
+      .user-dropdown-panel {
+        display: none; position: absolute; top: 100%; right: 0;
+        margin-top: 0.5rem; background: #1f2937; border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        width: 220px; padding: 0.5rem; z-index: 20;
+      }
+      .user-dropdown-panel.show { display: block; }
+      .user-dropdown-panel a, .user-dropdown-panel button {
+        display: block; width: 100%; text-align: left;
+        padding: 0.6rem 0.8rem; border-radius: 8px;
+        background: transparent; border: none; color: var(--text-primary);
+        font-size: 0.95rem; font-family: inherit;
+      }
+      .user-dropdown-panel a:hover, .user-dropdown-panel button:hover { background: var(--accent); color: #020617; }
+      .user-dropdown-panel .logout-form button { font-weight: 600; cursor: pointer; }
+    </style>
+    {% endblock %}
+  </head>
+  <body>
+    <header>
+      <div class="container" style="padding-bottom: 0">
+        <div class="toolbar">
+          <a href="{% url 'home' %}" style="display: flex; align-items: center; gap: 0.6rem">
+            <span class="badge" style="background: rgba(249,115,22,0.2); color: var(--accent)">Filimo Plus</span>
+            <strong>Video Platform</strong>
+          </a>
+          <nav>
+            <ul>
+              <li><a href="{% url 'home' %}">Home</a></li>
+              <li><a href="{% url 'video_catalog' %}?type=movie">Movies</a></li>
+              <li><a href="{% url 'series_list' %}">Series</a></li>
+            </ul>
+          </nav>
+          <div style="display: flex; gap: 0.8rem">
+            {% if request.user.is_authenticated %}
+              <div class="user-dropdown">
+                <div id="userDropdownTrigger" class="user-dropdown-trigger">
+                  <span>▼</span>
+                  <span>Welcome, {{ request.user.get_full_name|default:request.user.username }}</span>
+                </div>
+                <div id="userDropdownPanel" class="user-dropdown-panel">
+                  <a href="{% url 'dashboard' %}">Dashboard</a>
+                  <a href="{% url 'subscription_plans' %}">Buy Subscription</a>
+                  <a href="{% url 'bookmark_page' %}">Bookmarks</a>
+                  <a href="{% url 'profile_edit' %}">Edit Profile</a>
+                  <hr style="border-color: rgba(255,255,255,0.1); margin: 0.5rem 0;">
+                  <form class="logout-form" method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit">Logout</button>
+                  </form>
+                </div>
+              </div>
+            {% else %}
+              <a class="btn btn-outline" href="{% url 'login' %}">Login</a>
+              <a class="btn btn-primary" href="{% url 'register' %}">Register</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="container">
+      {% if messages %}
+        <div class="flash-container">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+    <footer>
+      <div class="container" style="padding-top: 0">
+        <p>© {% now 'Y' %} Video Platform - Developed with Django &amp; DRF</p>
+      </div>
+    </footer>
+    {% if request.user.is_authenticated %}
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const trigger = document.getElementById('userDropdownTrigger');
+        const panel = document.getElementById('userDropdownPanel');
+        if (trigger && panel) {
+          trigger.addEventListener('click', (event) => {
+            event.stopPropagation();
+            panel.classList.toggle('show');
+          });
+          document.addEventListener('click', (event) => {
+            if (!panel.contains(event.target) && !trigger.contains(event.target)) {
+              panel.classList.remove('show');
+            }
+          });
+        }
+      });
+    </script>
+    {% endif %}
+  </body>
+</html>

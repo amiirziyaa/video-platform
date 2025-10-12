@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Home | Video Subscription Platform{% endblock %}
+{% block content %}
+  <section class="hero">
+    <span class="badge">Special Offer</span>
+    <h1>Unlimited Movies & Series in Cinematic Quality</h1>
+    <p>
+      Subscribe to our platform to get access to the latest content,
+      watch trailers, bookmark videos, and enjoy a premium experience.
+    </p>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap">
+      <a class="btn btn-primary" href="{% url 'subscription_plans' %}">View Plans</a>
+      <a class="btn btn-outline" href="{% url 'video_catalog' %}">Browse Library</a>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-heading">
+      <h2>Featured Videos</h2>
+      <a class="btn btn-outline" href="{% url 'video_catalog' %}">View All</a>
+    </div>
+    {% if featured_videos %}
+      <div class="grid grid-3">
+        {% for video in featured_videos %}
+          <article class="card video-card">
+            <a href="{% url 'video_detail' slug=video.slug %}">
+              <div class="video-thumb">
+                {% if video.display_thumbnail %}
+                  <img src="{{ video.display_thumbnail }}" alt="{{ video.title }}" />
+                {% else %}
+                  <img src="https://dummyimage.com/640x360/1f2937/fff.png&text={{ video.title|urlencode }}" alt="{{ video.title }}" />
+                {% endif %}
+                {% if video.is_premium %}
+                  <span class="badge">Premium</span>
+                {% endif %}
+              </div>
+            </a>
+            <div style="display: flex; flex-direction: column; gap: 0.4rem">
+              <a href="{% url 'video_detail' slug=video.slug %}"><strong>{{ video.title }}</strong></a>
+              {% if video.category %}
+                <span style="color: var(--text-muted); font-size: 0.9rem">{{ video.category.name }}</span>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">No featured videos have been published yet.</div>
+    {% endif %}
+  </section>
+
+  <section>
+    <div class="section-heading">
+      <h2>Latest Videos</h2>
+    </div>
+    {% if newest_videos %}
+      <div class="grid grid-4">
+        {% for video in newest_videos %}
+          <article class="card video-card">
+            <a href="{% url 'video_detail' slug=video.slug %}">
+              <div class="video-thumb">
+                {% if video.display_thumbnail %}
+                  <img src="{{ video.display_thumbnail }}" alt="{{ video.title }}" />
+                {% else %}
+                  <img src="https://dummyimage.com/640x360/1f2937/fff.png&text={{ video.title|urlencode }}" alt="{{ video.title }}" />
+                {% endif %}
+              </div>
+            </a>
+            <div style="display: flex; flex-direction: column; gap: 0.4rem">
+              <a href="{% url 'video_detail' slug=video.slug %}"><strong>{{ video.title }}</strong></a>
+              <span style="color: var(--text-muted); font-size: 0.85rem">Duration: {{ video.duration_seconds|default:0 }}s</span>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">No new content is available at the moment.</div>
+    {% endif %}
+  </section>
+
+  <section>
+    <div class="section-heading">
+      <h2>Popular Plans</h2>
+      <a class="btn btn-outline" href="{% url 'subscription_plans' %}">Show All Plans</a>
+    </div>
+    {% if active_plans %}
+      <div class="grid grid-3">
+        {% for plan in active_plans %}
+          <div class="card" style="display: flex; flex-direction: column; gap: 0.8rem">
+            <span class="badge">Level {{ plan.level }}</span>
+            <strong>{{ plan.name }}</strong>
+            <p style="color: var(--text-muted); min-height: 3.5rem">{{ plan.description|default:"" }}</p>
+            <div style="display: flex; align-items: baseline; gap: 0.4rem">
+              <span style="font-size: 1.6rem; font-weight: 700">{{ plan.price|floatformat:0 }}</span>
+              <span style="color: var(--text-muted); font-size: 0.9rem">{{ plan.currency }}</span>
+            </div>
+            <a class="btn btn-primary" href="{% url 'subscription_plans' %}#plan-{{ plan.slug }}">Get Started</a>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">No active plans have been defined yet.</div>
+    {% endif %}
+  </section>
+{% endblock %}

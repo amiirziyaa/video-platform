@@ -1,0 +1,13 @@
+# Django Framework
+django~=4.2
+djangorestframework~=3.14
+
+# API Features
+djangorestframework-simplejwt~=5.3
+django-filter~=23.3
+
+# For ImageField support
+Pillow~=10.1
+
+# For making HTTP requests (e.g., to Zarinpal)
+requests~=2.31

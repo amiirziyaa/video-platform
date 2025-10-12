@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Subscription Plans{% endblock %}
+{% block content %}
+  <section class="hero" style="padding: 3rem 0 2rem">
+    <h1>Choose the Right Plan for You</h1>
+    <p>A variety of subscription packages with different access levels for a flexible and affordable experience.</p>
+  </section>
+
+  {% if plans %}
+    <div class="grid grid-3">
+      {% for plan in plans %}
+        <div class="card" id="plan-{{ plan.slug }}" style="display: flex; flex-direction: column; gap: 0.6rem">
+          <span class="badge">Level {{ plan.level }}</span>
+          <h3 style="margin: 0">{{ plan.name }}</h3>
+          <p style="color: var(--text-muted); line-height: 1.8">{{ plan.description|default:"" }}</p>
+          <div style="display: flex; gap: 0.4rem; align-items: baseline">
+            <span style="font-size: 2rem; font-weight: 700">{{ plan.price|floatformat:0 }}</span>
+            <span style="color: var(--text-muted)">{{ plan.currency }}</span>
+          </div>
+          <span style="color: var(--text-muted); font-size: 0.9rem">Valid for {{ plan.duration_days }} days</span>
+          
+          {# --- Dynamic Button Logic --- #}
+          {% with active_sub=request.user.active_subscription %}
+            {% if active_sub %}
+              {% if plan.level < active_sub.plan.level %}
+                <button class="btn btn-disabled" disabled>Downgrade Not Possible</button>
+              {% elif plan.level == active_sub.plan.level %}
+                <a class="btn btn-primary" href="{% url 'subscription_checkout' slug=plan.slug %}">Renew</a>
+              {% else %}
+                <a class="btn btn-primary" href="{% url 'subscription_checkout' slug=plan.slug %}">Upgrade</a>
+              {% endif %}
+            {% else %}
+              <a class="btn btn-primary" href="{% url 'subscription_checkout' slug=plan.slug %}">Get Started</a>
+            {% endif %}
+          {% endwith %}
+          {# --- End of Dynamic Button Logic --- #}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">There are currently no plans to display.</div>
+  {% endif %}
+{% endblock %}

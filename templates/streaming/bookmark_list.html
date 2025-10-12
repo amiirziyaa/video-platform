@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}My Bookmarks{% endblock %}
+{% block content %}
+  <section class="hero" style="padding: 2.5rem 0 1.5rem">
+    <h1>Saved Bookmarks</h1>
+    <p>All the videos you've saved to watch later are displayed here.</p>
+  </section>
+
+  {% if bookmarks %}
+    <div class="grid grid-2" style="gap: 1.5rem;">
+      {% for bookmark in bookmarks %}
+        <article class="card">
+          <div class="card-body" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+            
+            <div>
+              <h5 class="card-title" style="margin-top: 0; margin-bottom: 0.5rem;">
+                <a href="{% url 'video_detail' slug=bookmark.video.slug %}">{{ bookmark.video.title }}</a>
+              </h5>
+              {% if bookmark.video.category %}
+                <span class="badge" style="background: var(--accent-muted); color: var(--accent);">{{ bookmark.video.category.name }}</span>
+              {% endif %}
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                <span style="color: var(--text-muted); font-size: 0.85rem;">Saved: {{ bookmark.created_at|date:"Y/m/d" }}</span>
+                
+                <form method="post" action="{% url 'delete_bookmark' pk=bookmark.pk %}" style="margin: 0;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            </div>
+
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+    
+    {% if is_paginated %}
+      <div style="display: flex; justify-content: center; gap: 0.6rem; margin-top: 1.5rem">
+        {% if page_obj.has_previous %}
+          <a class="btn btn-outline" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+        <span style="align-self: center; color: var(--text-muted)">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+          <a class="btn btn-outline" href="?page={{ page_obj.next_page_number }}">Next</a>
+        {% endif %}
+      </div>
+    {% endif %}
+
+  {% else %}
+    <div class="empty-state">No bookmarks found.</div>
+  {% endif %}
+{% endblock %}

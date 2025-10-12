@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}All Series{% endblock %}
+
+{% block content %}
+  <section class="hero" style="padding: 3rem 0 2rem">
+    <h1>All Series</h1>
+    <p>Browse our collection of series and TV shows.</p>
+  </section>
+
+  {% if series_list %}
+    <div class="grid grid-4">
+      {% for series in series_list %}
+        <article class="card video-card">
+          {# This link will take the user to the video catalog, filtered to show only episodes of this series #}
+          <a href="{% url 'video_catalog' %}?series_slug={{ series.slug }}">
+            <div class="video-thumb">
+              {% if series.poster %}
+                <img src="{{ series.poster.url }}" alt="{{ series.title }}" />
+              {% else %}
+                <img src="https://dummyimage.com/640x360/1f2937/ffffff.png&text={{ series.title|urlencode }}" alt="{{ series.title }}" />
+              {% endif %}
+            </div>
+          </a>
+          <a href="{% url 'video_catalog' %}?series_slug={{ series.slug }}">
+            <strong>{{ series.title }}</strong>
+            {% if series.release_year %}
+              <span style="color: var(--text-muted); font-size: 0.9rem; display: block;">({{ series.release_year }})</span>
+            {% endif %}
+          </a>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">No series are available at the moment.</div>
+  {% endif %}
+{% endblock %}

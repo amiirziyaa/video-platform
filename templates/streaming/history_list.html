@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Watch History{% endblock %}
+
+{% block content %}
+  <div class="container mt-5">
+    <h1 class="mb-4">Full Watch History</h1>
+    
+    {% if history %}
+      <div class="grid grid-2" style="gap: 1.5rem;">
+        {% for item in history %}
+          <article class="card">
+            <div class="card-body" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+              
+              <div>
+                <h5 class="card-title" style="margin-top: 0; margin-bottom: 0.5rem;">
+                  <a href="{% url 'video_detail' slug=item.video.slug %}">{{ item.video.title }}</a>
+                </h5>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                  <span style="color: var(--text-muted); font-size: 0.85rem;">Watched: {{ item.watched_at|date:"Y/m/d" }}</span>
+                  {% if item.completed %}
+                    <span class="badge" style="background: #10B981; color: white;">Completed</span>
+                  {% else %}
+                    <span class="badge" style="background: var(--accent-muted); color: var(--accent);">In Progress</span>
+                  {% endif %}
+              </div>
+
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+      
+      {% if is_paginated %}
+      <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination">
+          {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page=1">&laquo; First</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+          {% endif %}
+          
+          <li class="page-item active" aria-current="page">
+            <span class="page-link">
+              Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+          </li>
+          
+          {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+      
+    {% else %}
+      <div class="empty-state">You have not watched any videos yet.</div>
+    {% endif %}
+  </div>
+{% endblock %}

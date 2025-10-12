@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Login to Your Account{% endblock %}
+{% block content %}
+  <section class="card" style="margin: 4rem auto; max-width: 420px; padding: 2rem; display: grid; gap: 1.2rem">
+    <h1 style="margin: 0; text-align: center">Login</h1>
+    {% if form.errors %}
+      <div class="card" style="background: rgba(220,38,38,0.15); color: #fca5a5; padding: 1rem;">
+        Your username and password didn't match. Please try again.
+      </div>
+    {% endif %}
+    <form method="post" style="display: grid; gap: 1rem">
+      {% csrf_token %}
+      <label style="display: grid; gap: 0.3rem">
+        <span>Username</span>
+        {{ form.username }}
+        {% if form.username.errors %}
+          <small style="color: #fca5a5">{{ form.username.errors|join:', ' }}</small>
+        {% endif %}
+      </label>
+      <label style="display: grid; gap: 0.3rem">
+        <span>Password</span>
+        {{ form.password }}
+        {% if form.password.errors %}
+          <small style="color: #fca5a5">{{ form.password.errors|join:', ' }}</small>
+        {% endif %}
+      </label>
+      <button class="btn btn-primary" type="submit">Login</button>
+    </form>
+    <p style="text-align: center; color: var(--text-muted)">
+      Don't have an account? <a href="{% url 'register' %}" style="color: var(--accent);">Register here</a>
+    </p>
+  </section>
+{% endblock %}

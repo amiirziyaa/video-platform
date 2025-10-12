@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Billing History{% endblock %}
+
+{% block content %}
+  <div class="container mt-5">
+    <h1 class="mb-4">My Billing History</h1>
+    
+    <h2 class="mt-5 mb-3">Subscription History</h2>
+    {% if subscriptions %}
+      <div class="grid grid-2" style="gap: 1.5rem;">
+        {% for sub in subscriptions %}
+          <div class="card">
+            <div class="card-body" style="padding: 1.5rem;">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <h5 class="card-title" style="margin-top: 0;">{{ sub.plan.name }}</h5>
+                <span class="badge" style="background: var(--accent-muted); color: var(--accent);">{{ sub.start_date|date:"Y-m-d" }}</span>
+              </div>
+              <p class="card-text" style="color: var(--text-muted); margin-bottom: 0;">Status: <strong>{{ sub.status }}</strong></p>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>No subscription history found.</p>
+    {% endif %}
+
+    <hr class="my-5">
+
+    <h2 class="mb-3">All Payments History</h2>
+    {% if payments %}
+      <div class="grid grid-2" style="gap: 1.5rem;">
+        {% for payment in payments %}
+          <div class="card">
+            <div class="card-body" style="padding: 1.5rem;">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <h5 class="card-title" style="margin-top: 0;">{{ payment.amount|floatformat:0 }} {{ payment.currency }}</h5>
+                <span class="badge" style="background: var(--accent-muted); color: var(--accent);">{{ payment.processed_at|date:"Y-m-d" }}</span>
+              </div>
+              <p class="card-text" style="color: var(--text-muted);">For Plan: {{ payment.plan.name|default:"(Not specified)" }}</p>
+              <small class="text-muted" style="display: block; margin-top: 0.5rem;">Ref: {{ payment.reference_code }}</small>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>No successful payments found.</p>
+    {% endif %}
+
+  </div>
+{% endblock %}

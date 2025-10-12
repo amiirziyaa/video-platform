@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Create a New Account{% endblock %}
+{% block content %}
+  <section class="card" style="margin: 4rem auto; max-width: 520px; padding: 2.4rem; display: grid; gap: 1.4rem">
+    <h1 style="margin: 0; text-align: center">Register</h1>
+    <form method="post" style="display: grid; gap: 1rem">
+      {% csrf_token %}
+      {% for field in form %}
+        <label style="display: grid; gap: 0.3rem">
+          <span>{{ field.label }}</span>
+          {{ field }}
+          {% if field.help_text %}
+            <small style="color: var(--text-muted); font-size: 0.8rem">{{ field.help_text }}</small>
+          {% endif %}
+          {% if field.errors %}
+            <small style="color: #fca5a5">{{ field.errors|join:', ' }}</small>
+          {% endif %}
+        </label>
+      {% endfor %}
+      <button class="btn btn-primary" type="submit">Create Account</button>
+    </form>
+    <p style="text-align: center; color: var(--text-muted)">
+      Already have an account? <a href="{% url 'login' %}" style="color: var(--accent);">Login here</a>
+    </p>
+  </section>
+{% endblock %}

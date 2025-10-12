@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}{{ video.title }} | Video Platform{% endblock %}
+{% block content %}
+  <article class="card" style="margin-top: 2rem; padding: 2rem">
+    <header style="display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); align-items: center">
+      <div class="video-thumb" style="border-radius: 20px">
+        {% if video.display_thumbnail %}
+          <img src="{{ video.display_thumbnail }}" alt="{{ video.title }}" />
+        {% else %}
+          <img src="https://dummyimage.com/640x360/1f2937/ffffff.png&text={{ video.title|urlencode }}" alt="{{ video.title }}" />
+        {% endif %}
+        {% if video.is_premium %}
+          <span class="badge">Premium</span>
+        {% endif %}
+      </div>
+      <div style="display: grid; gap: 0.8rem">
+        <h1 style="margin: 0">{{ video.title }}</h1>
+        {% if video.category %}
+          <span class="badge">Category: {{ video.category.name }}</span>
+        {% endif %}
+        <p style="color: var(--text-muted); line-height: 1.9">{{ video.description|linebreaksbr }}</p>
+        <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; color: var(--text-muted)">
+          <span>Average Rating: {{ average_rating|floatformat:1 }}/5</span>
+          <span>Duration: {{ video.duration_seconds }} seconds</span>
+          {% if video.published_at %}
+            <span>Published: {{ video.published_at|date:"Y/m/d" }}</span>
+          {% endif %}
+        </div>
+        
+        {% if request.user.is_authenticated %}
+          <div style="margin-top: 1rem;">
+            <form method="post" action="{% url 'toggle_bookmark' slug=video.slug %}">
+              {% csrf_token %}
+              {% if is_bookmarked %}
+                <button type="submit" class="btn btn-danger">🔖 Remove from Bookmarks</button>
+              {% else %}
+                <button type="submit" class="btn btn-outline">🔖 Add to Bookmarks</button>
+              {% endif %}
+            </form>
+          </div>
+        {% endif %}
+
+        {% if can_watch %}
+          <div style="display: grid; gap: 1rem; margin-top: 1rem;">
+            {% if video.playback_url %}
+              <button id="watchVideoButton" class="btn btn-primary">Watch Video</button>
+            {% else %}
+              <div class="card" style="background: rgba(59,130,246,0.18); color: #bfdbfe">
+                A video file has not been provided for this content.
+              </div>
+            {% endif %}
+            {% if video.trailer_url %}
+              <a class="btn btn-outline" href="{{ video.trailer_url }}" target="_blank" rel="noopener">Watch Trailer</a>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="card" style="background: rgba(249,115,22,0.08); color: var(--accent); margin-top: 1rem;">
+            You must be logged in with a valid subscription to watch this video.
+          </div>
+        {% endif %}
+      </div>
+    </header>
+  </article>
+
+  {% if can_watch %}
+  <section style="margin-top: 2rem;">
+    <div class="section-heading">
+      <h2>Submit a Review</h2>
+    </div>
+    <div class="card" style="padding: 2rem;">
+      <form method="post" action="{% url 'add_review' slug=video.slug %}">
+        {% csrf_token %}
+        <div style="display: grid; gap: 1rem;">
+          <div>{{ comment_form.rating.label_tag }} {{ comment_form.rating }}</div>
+          <div>{{ comment_form.comment.label_tag }} {{ comment_form.comment }}</div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            {{ comment_form.is_spoiler }} {{ comment_form.is_spoiler.label_tag }}
+          </div>
+          <button type="submit" class="btn btn-primary" style="justify-self: start;">Submit Review</button>
+        </div>
+      </form>
+    </div>
+  </section>
+  {% endif %}
+
+  <section style="margin-top: 2rem">
+    <div class="section-heading">
+      <h2>Related Videos</h2>
+    </div>
+    {% if related_videos %}
+      <div class="grid grid-4">
+        {% for related in related_videos %}
+          <article class="card video-card">
+            <a href="{% url 'video_detail' slug=related.slug %}">
+              <div class="video-thumb">
+                {% if related.display_thumbnail %}
+                  <img src="{{ related.display_thumbnail }}" alt="{{ related.title }}" />
+                {% else %}
+                  <img src="https://dummyimage.com/640x360/1f2937/ffffff.png&text={{ related.title|urlencode }}" alt="{{ related.title }}" />
+                {% endif %}
+              </div>
+            </a>
+            <a href="{% url 'video_detail' slug=related.slug %}"><strong>{{ related.title }}</strong></a>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">No related videos found.</div>
+    {% endif %}
+  </section>
+
+  <section style="margin-top: 2rem">
+    <div class="section-heading">
+      <h2>Latest Comments</h2>
+    </div>
+    {% if recent_comments %}
+      <div class="grid" style="gap: 1rem">
+        {% for comment in recent_comments %}
+          <div class="card" style="padding: 1rem;">
+            <p style="margin: 0;">{{ comment.comment }}</p>
+            <small class="text-muted">by {{ comment.user.username }} on {{ comment.created_at|date:"Y/m/d" }}</small>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">No comments have been posted for this video yet.</div>
+    {% endif %}
+  </section>
+  
+  {% if can_watch and video.playback_url %}
+  <script>
+      document.addEventListener('DOMContentLoaded', () => {
+          const watchButton = document.getElementById('watchVideoButton');
+          watchButton.addEventListener('click', () => {
+              fetch("{% url 'streaming:video-watch' slug=video.slug %}", {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+                  body: JSON.stringify({'video': {{ video.id }}})
+              })
+              .then(response => {
+                  console.log('Watch history logged.');
+                  window.open("{{ video.playback_url }}", "_blank");
+              })
+              .catch(error => {
+                  console.error('Error logging watch history:', error);
+                  window.open("{{ video.playback_url }}", "_blank");
+              });
+          });
+      });
+  </script>
+  {% endif %}
+{% endblock %}

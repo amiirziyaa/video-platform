@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Video Library{% endblock %}
+{% block content %}
+  <section class="section-heading" style="margin-top: 2rem">
+    <h2>Content Library</h2>
+    <form method="get" style="display: flex; gap: 0.6rem">
+      <select name="category" class="card" style="padding: 0.6rem 1rem; background: rgba(255,255,255,0.04); color: inherit; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); min-width: 200px">
+        <option value="">All Categories</option>
+        {% for category in categories %}
+          <option value="{{ category.slug }}" {% if category.slug == selected_category %}selected{% endif %}>{{ category.name }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-primary" type="submit">Filter</button>
+    </form>
+  </section>
+
+  {% if videos %}
+    <div class="grid grid-3">
+      {% for video in videos %}
+        <article class="card video-card">
+          <a href="{% url 'video_detail' slug=video.slug %}">
+            <div class="video-thumb">
+              {% if video.display_thumbnail %}
+                <img src="{{ video.display_thumbnail }}" alt="{{ video.title }}" />
+              {% else %}
+                <img src="https://dummyimage.com/640x360/1f2937/ffffff.png&text={{ video.title|urlencode }}" alt="{{ video.title }}" />
+              {% endif %}
+              {% if video.is_premium %}
+                <span class="badge">Premium</span>
+              {% endif %}
+            </div>
+          </a>
+          <div style="display: flex; flex-direction: column; gap: 0.4rem">
+            <a href="{% url 'video_detail' slug=video.slug %}"><strong>{{ video.title }}</strong></a>
+            {% if video.category %}
+              <span style="color: var(--text-muted); font-size: 0.85rem">{{ video.category.name }}</span>
+            {% endif %}
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">No content was found matching your filter.</div>
+  {% endif %}
+
+  {% if is_paginated %}
+    <nav style="margin: 2rem 0; display: flex; justify-content: center; gap: 0.4rem; align-items: center;">
+      {% if page_obj.has_previous %}
+        <a class="btn btn-outline" href="?{% if selected_category %}category={{ selected_category }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+      {% endif %}
+      <span class="badge">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a class="btn btn-outline" href="?{% if selected_category %}category={{ selected_category }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+      {% endif %}
+    </nav>
+  {% endif %}
+{% endblock %}

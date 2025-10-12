@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}User Dashboard{% endblock %}
+{% block content %}
+  <section class="hero" style="padding: 2.5rem 0 1.5rem">
+    <h1>Welcome, {{ request.user.get_full_name|default:request.user.username }} 👋</h1>
+    <p>Here you can manage your subscription status, recent watch history, and bookmarks.</p>
+  </section>
+
+  <section class="grid grid-3">
+    <div class="card" style="grid-column: span 2">
+      <h2 style="margin-top: 0">Subscription Status</h2>
+      {% if active_subscription %}
+        <p style="color: var(--text-muted)">
+          Your {{ active_subscription.plan.name }} plan is active until {{ active_subscription.end_date|date:"Y/m/d" }}.
+        </p>
+        {% comment %} <p style="color: var(--text-muted)">Renewals: {{ active_subscription.renewal_count }}</p> {% endcomment %}
+        <div style="display: flex; gap: 1rem; margin-top: 1rem; align-items: center;">
+          <a class="btn btn-primary" href="{% url 'subscription_plans' %}">Upgrade Plan</a>
+          <a class="btn btn-outline" href="{% url 'streaming:subscription-list' %}">View History</a>
+          
+          <form method="post" action="{% url 'cancel_subscription' %}" style="margin: 0;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel your subscription? This action cannot be undone.')">
+              Cancel
+            </button>
+          </form>
+        </div>
+      {% else %}
+        <p class="empty-state" style="padding: 0">You don't have an active subscription. Choose a plan to get started.</p>
+        <a class="btn btn-primary" href="{% url 'subscription_plans' %}">Buy Subscription</a>
+      {% endif %}
+    </div>
+    <div class="card">
+      <h2 style="margin-top: 0">Today's Suggestion</h2>
+      {% if recommended_videos %}
+        {% for suggestion in recommended_videos|slice:":1" %}
+          <a href="{% url 'video_detail' slug=suggestion.slug %}" style="display: grid; gap: 0.6rem">
+            <div class="video-thumb">
+              {% if suggestion.display_thumbnail %}
+                <img src="{{ suggestion.display_thumbnail }}" alt="{{ suggestion.title }}" />
+              {% else %}
+                <img src="https://dummyimage.com/640x360/1f2937/ffffff.png&text={{ suggestion.title|urlencode }}" alt="{{ suggestion.title }}" />
+              {% endif %}
+            </div>
+            <strong>{{ suggestion.title }}</strong>
+            <span style="color: var(--text-muted)">Duration: {{ suggestion.duration_seconds }}s</span>
+          </a>
+        {% endfor %}
+      {% else %}
+        <p class="empty-state" style="padding: 0">New suggestions will be added soon.</p>
+      {% endif %}
+    </div>
+  </section>
+
+  <section style="margin-top: 2rem">
+    <div class="section-heading">
+      <h2>Watch History</h2>
+      <a class="btn btn-outline" href="{% url 'history_page' %}">View All</a>
+    </div>
+  {% if recent_history %}
+    <div class="grid grid-3" style="gap: 1.5rem;">
+      {% for item in recent_history %}
+        <article class="card">
+          <div class="card-body" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+            <div>
+              <h5 class="card-title" style="margin-top: 0; margin-bottom: 0.5rem;">
+                <a href="{% url 'video_detail' slug=item.video.slug %}">{{ item.video.title }}</a>
+              </h5>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                <span style="color: var(--text-muted); font-size: 0.85rem;">Watched: {{ item.watched_at|date:"Y/m/d" }}</span>
+                {% if item.completed %}
+                  <span class="badge" style="background: #10B981; color: white;">Completed</span>
+                {% else %}
+                  <span class="badge" style="background: var(--accent-muted); color: var(--accent);">In Progress</span>
+                {% endif %}
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">You haven't watched any videos yet.</div>
+  {% endif %}
+  </section>
+
+  <section style="margin-top: 2rem">
+    <div class="section-heading">
+      <h2>Bookmarks</h2>
+      <a class="btn btn-outline" href="{% url 'bookmark_page' %}">Manage Bookmarks</a>
+    </div>
+    {% if bookmarks %}
+    <div class="grid grid-3" style="gap: 1.5rem;">
+      {% for bookmark in bookmarks %}
+        <div class="card">
+          <div class="card-body" style="padding: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+            <a href="{% url 'video_detail' slug=bookmark.video.slug %}">
+              <strong>{{ bookmark.video.title }}</strong>
+            </a>
+            <form method="post" action="{% url 'delete_bookmark' pk=bookmark.pk %}" style="margin: 0;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger btn-sm" title="Remove bookmark">&times;</button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    {% else %}
+      <div class="empty-state">You have no active bookmarks.</div>
+    {% endif %}
+  </section>
+{% endblock %}

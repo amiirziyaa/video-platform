@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Confirm Subscription Purchase{% endblock %}
+{% block content %}
+  <section class="hero" style="padding: 2.5rem 0 1.5rem">
+    <h1>Confirm {{ plan.name }} Plan</h1>
+    <p>Review the details of your selected plan. After confirming payment, your subscription will be activated automatically.</p>
+  </section>
+
+  <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem">
+    <div class="card" style="display: grid; gap: 0.8rem">
+      <span class="badge">Level {{ plan.level }}</span>
+      <h2 style="margin: 0">{{ plan.name }}</h2>
+      <p style="color: var(--text-muted); line-height: 1.8">{{ plan.description|default:"" }}</p>
+      <div style="display: flex; gap: 0.4rem; align-items: baseline">
+        <span style="font-size: 2.2rem; font-weight: 700">{{ plan.price|floatformat:0 }}</span>
+        <span style="color: var(--text-muted)">{{ plan.currency }}</span>
+      </div>
+      <span style="color: var(--text-muted); font-size: 0.95rem">Valid for {{ plan.duration_days }} days</span>
+      {% if active_subscription %}
+        <div class="card" style="background: rgba(59,130,246,0.12); border-color: rgba(59,130,246,0.2); color: #bfdbfe; padding: 1rem;">
+          <strong>Active Subscription:</strong>
+          <div>Your current plan is {{ active_subscription.plan.name }} and is valid until {{ active_subscription.end_date|date:"Y/m/d" }}.</div>
+        </div>
+      {% endif %}
+    </div>
+    <div class="card" style="display: grid; gap: 1rem; align-self: start">
+      <h2 style="margin: 0">Confirm and Pay</h2>
+      <p style="color: var(--text-muted); line-height: 1.8">
+        By clicking the confirm button, a payment request will be created. After automatic confirmation from the bank gateway, your subscription will be activated or renewed.
+      </p>
+      <form method="post" style="display: grid; gap: 0.8rem">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary" style="justify-self: start">Confirm and Pay</button>
+        <a class="btn btn-outline" href="{% url 'subscription_plans' %}">Back to Plans</a>
+      </form>
+    </div>
+  </div>
+{% endblock %}

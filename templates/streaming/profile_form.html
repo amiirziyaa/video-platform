@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile{% endblock %}
+{% block content %}
+  <section class="card" style="margin: 4rem auto; max-width: 520px; padding: 2.4rem; display: grid; gap: 1.4rem">
+    <h1 style="margin: 0; text-align: center">Edit Your Profile</h1>
+    
+    <form method="post" style="display: grid; gap: 1rem">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="btn btn-primary" type="submit">Save Changes</button>
+    </form>
+    
+    <hr style="border-color: rgba(255,255,255,0.1);">
+    
+    <div style="text-align: center;">
+      <p style="color: var(--text-muted); margin-bottom: 0.5rem;">Looking to change your password?</p>
+      <a href="{% url 'password_change' %}" class="btn btn-outline">Change Password</a>
+    </div>
+  </section>
+{% endblock %}
